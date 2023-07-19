@@ -1,0 +1,1 @@
+export type VMStatus = 'running' | 'shutdown' | 'inaccessible' | 'booting' | 'shutting_down' | 'moving' | 'stor_migrating' | 'creating' | 'importing' | 'preparing' | 'ha_standby' | 'crashed' | 'unknown';
