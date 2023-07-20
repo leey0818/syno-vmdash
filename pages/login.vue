@@ -1,22 +1,58 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useAppStore } from '@/stores/app';
 
+const router = useRouter();
 const appStore = useAppStore();
-const synoDomain = ref('');
-const synoUsername = ref('');
-const synoPassword = ref('');
 
-const handleClickLogin = async () => {
-  if (synoDomain.value && synoUsername.value && synoPassword.value) {
-    const result = await appStore.loginUser(synoDomain.value, synoUsername.value, synoPassword.value);
-    console.log(`logined! ${JSON.stringify(result)}`);
+const formInput = reactive({
+  domain: '',
+  username: '',
+  password: '',
+});
+const formError = reactive({
+  domain: '',
+  username: '',
+  password: '',
+});
+
+// 폼 입력값 검증
+const doValidateForm = () => {
+  let hasError = false;
+  if (!formInput.domain) {
+    hasError = true;
+    formError.domain = '도메인을 입력하세요.';
+  } else if (!/^http(s)?:\/\//.test(formInput.domain)) {
+    hasError = true;
+    formError.domain = '도메인은 http(s):// 으로 시작해야 합니다.';
+  } else {
+    formError.domain = '';
   }
+
+  if (!formInput.username) {
+    hasError = true;
+    formError.username = '아이디를 입력하세요.';
+  } else {
+    formError.username = '';
+  }
+
+  if (!formInput.password) {
+    hasError = true;
+    formError.password = '패스워드를 입력하세요.';
+  } else {
+    formError.password = '';
+  }
+
+  return !hasError;
 };
 
-const handleClickLogout = async () => {
-  await appStore.logoutUser();
-  alert('done!');
+// 로그인
+const handleFormSubmit = async () => {
+  if (doValidateForm()) {
+    const logined = await appStore.loginUser(formInput.domain, formInput.username, formInput.password);
+    if (logined) {
+      router.push('/');
+    }
+  }
 };
 </script>
 
@@ -26,25 +62,43 @@ const handleClickLogout = async () => {
       <p class="text-center text-4xl md:text-5xl mb-2 font-semibold">Synology DSM</p>
       <p class="text-center text-2xl md:text-3xl">Virtual Machine Manager</p>
     </div>
-    <div class="text-slate-800">
+
+    <form class="text-slate-800" @submit.prevent="handleFormSubmit">
       <label class="block mb-4">
         <p class="text-sm leading-relaxed text-slate-400">도메인</p>
-        <input type="text" class="border px-2 h-10 w-full" placeholder="ex) https://my.synology.me:5001" v-model="synoDomain"/>
+        <input
+          type="text"
+          class="border rounded px-2 h-10 w-full"
+          placeholder="ex) https://my.synology.me:5001"
+          v-model.trim="formInput.domain"
+          :class="{ 'border-red-600': formError.domain }" />
+        <p class="text-sm leading-relaxed text-red-600" v-if="formError.domain">{{ formError.domain }}</p>
       </label>
       <label class="block mb-4">
         <p class="text-sm leading-relaxed text-slate-400">아이디</p>
-        <input type="text" class="border px-2 h-10 w-full" v-model="synoUsername"/>
+        <input
+          type="text"
+          class="border rounded px-2 h-10 w-full"
+          v-model.trim="formInput.username"
+          :class="{ 'border-red-600': formError.username }" />
+        <p class="text-sm leading-relaxed text-red-600" v-if="formError.username">{{ formError.username }}</p>
       </label>
       <label class="block mb-4">
         <p class="text-sm leading-relaxed text-slate-400">패스워드</p>
-        <input type="password" class="border px-2 h-10 w-full" v-model="synoPassword"/>
+        <input
+          type="password"
+          class="border rounded px-2 h-10 w-full"
+          v-model="formInput.password"
+          :class="{ 'border-red-600': formError.password }" />
+        <p class="text-sm leading-relaxed text-red-600" v-if="formError.password">{{ formError.password }}</p>
       </label>
+
       <label class="block mb-4" v-if="false">
         <p class="text-sm leading-relaxed text-slate-400">OTP 번호</p>
-        <input type="text" maxlength="6" class="border px-2 h-10 w-full" />
+        <input type="text" maxlength="6" class="border rounded px-2 h-10 w-full" />
       </label>
-      <button class="rounded-md h-10 w-full text-white text-center bg-sky-600" @click="handleClickLogin">로그인</button>
-      <button class="rounded-md h-10 w-full text-black text-center bg-white" @click="handleClickLogout">로그아웃</button>
-    </div>
+
+      <button type="submit" class="rounded h-10 w-full text-white text-center bg-sky-600">로그인</button>
+    </form>
   </div>
 </template>

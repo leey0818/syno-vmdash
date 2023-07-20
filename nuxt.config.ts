@@ -9,4 +9,7 @@ export default defineNuxtConfig({
   devtools: {
     enabled: true,
   },
+  tailwindcss: {
+    exposeConfig: true,
+  },
 });
