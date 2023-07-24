@@ -9,10 +9,18 @@ type VirtualMachineCardType = {
   status: VMStatus
 };
 
+type VirtualMachineCardEmits = {
+  (e: 'start'): void;
+  (e: 'stop'): void;
+  (e: 'force-stop'): void;
+};
+
 const COND_PLAY_STATUS: VMStatus[] = ['shutdown'];
 const COND_STOP_STATUS: VMStatus[] = ['booting', 'crashed', 'ha_standby', 'running', 'shutting_down'];
 
 const props = defineProps<VirtualMachineCardType>();
+const emit = defineEmits<VirtualMachineCardEmits>();
+
 const isCanPlay = computed(() => COND_PLAY_STATUS.includes(props.status));
 const isCanStop = computed(() => COND_STOP_STATUS.includes(props.status));
 const vmIcon = computed(() => {
@@ -64,13 +72,17 @@ const statusName = computed(() => {
 
 const handleClickPlay = () => {
   if (isCanPlay.value) {
-    confirm('play?');
+    emit('start');
   }
 };
 
 const handleClickStop = (forceStop = false) => {
   if (isCanStop.value) {
-    confirm(`stop? ${forceStop}`);
+    if (forceStop) {
+      emit('force-stop');
+    } else {
+      emit('stop');
+    }
   }
 }
 </script>

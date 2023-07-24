@@ -6,9 +6,9 @@ export default defineNuxtConfig({
   ],
   css: ['@fortawesome/fontawesome-svg-core/styles.css'],
   plugins: ['./plugins/fontawesome.ts'],
-  devtools: {
-    enabled: true,
-  },
+//  devtools: {
+//    enabled: true,
+//  },
   tailwindcss: {
     exposeConfig: true,
   },

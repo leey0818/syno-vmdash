@@ -1,6 +1,6 @@
-import { ProxyResponse, fetchProxyRequest } from "./base";
+import { fetchProxyRequest } from "./base";
 
-type AuthLoginResponse = ProxyResponse<{ sid: string; }>;
+type AuthLoginResponse = { sid: string; };
 
 /**
  * Synology DSM 로그인
@@ -24,7 +24,7 @@ export const loginDSM = (domain: string, username: string, password: string) => 
  * @param sid 로그인 SID
  * @returns
  */
-export const logoutDSM = (domain: string, sid: string) => fetchProxyRequest<ProxyResponse<{}>>(domain, 'auth', {
+export const logoutDSM = (domain: string, sid: string) => fetchProxyRequest<{}>(domain, 'auth', {
   api: 'SYNO.API.Auth',
   method: 'logout',
   version: '3',

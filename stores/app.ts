@@ -1,29 +1,32 @@
-import { loginDSM, logoutDSM } from "@/api/auth";
+import { computed } from "vue";
 import { defineStore } from "pinia";
-import { computed, ref } from "vue";
+import { loginDSM, logoutDSM } from "@/api/auth";
+import { APIError } from "@/util/types";
 
-const getDefaultLoginState = () => ({
-  sid: '',
-  domain: '',
-});
+const getDefaultLoginState = () => ({ sid: '', domain: '' });
 
 export const useAppStore = defineStore('app', () => {
-  const loginInfo = ref(getDefaultLoginState());
+  // const loginInfo = ref(getSaveLoginState());
+  const loginInfo = useCookie('_api_info', {
+    default: getDefaultLoginState,
+    sameSite: true,
+    watch: true,
+  })
 
   // DSM 로그인
   const loginUser = async (domain: string, username: string, password: string) => {
     try {
-      const response = await loginDSM(domain, username, password);
-
-      if (response.success) {
-        loginInfo.value = {
-          sid: response.data.sid,
-          domain: domain,
-        };
-      } else {
-        loginInfo.value = getDefaultLoginState();
-      }
+      const result = await loginDSM(domain, username, password);
+      loginInfo.value = {
+        sid: result.sid,
+        domain: domain,
+      };
     } catch (e) {
+      if (e instanceof APIError) {
+        // TODO
+        console.warn(e);
+      }
+
       loginInfo.value = getDefaultLoginState();
     }
 
@@ -36,11 +39,16 @@ export const useAppStore = defineStore('app', () => {
     loginInfo.value = getDefaultLoginState();
   };
 
+  const clearState = () => {
+    loginInfo.value = getDefaultLoginState();
+  };
+
   return {
     logined: computed(() => !!loginInfo.value.sid),
     sid: computed(() => loginInfo.value.sid),
     domain: computed(() => loginInfo.value.domain),
     loginUser,
     logoutUser,
+    clearState,
   };
 });
